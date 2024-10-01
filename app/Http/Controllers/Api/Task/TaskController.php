@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\TaskRepository;
 use Validator;
+use App\Enums\UserType;
+
 
 class TaskController extends Controller
 {
@@ -25,7 +27,7 @@ class TaskController extends Controller
     {
         $items = $this->taskRepository->getAlltasks();
         // check if auth user is admin or user with user_type_id
-        if (Auth::user()->user_type_id == 2) 
+        if (Auth::user()->user_type_id ==  UserType::USER->value) 
         {
             $items = $items->where('user_id', Auth::id());
         }
@@ -46,7 +48,7 @@ class TaskController extends Controller
         // call repo getbyid fun
         $item = $this->taskRepository->getTaskById($id);
         // forbidden user if task not assiend for him to see task
-        if ($item->user_id != Auth::id() && Auth::user()->user_type_id == 2) {
+        if ($item->user_id != Auth::id() && Auth::user()->user_type_id ==  UserType::USER->value) {
             return $this->sendexternalResponse('forbidden', [], 403);
         }
 
@@ -93,7 +95,7 @@ class TaskController extends Controller
         );
         $data = $validation->validated();
         $item = task::findOrFail($data['task_id']);
-        if (Auth::user()->user_type_id == 2 && $item->user_id != Auth::id()) {
+        if (Auth::user()->user_type_id ==  UserType::USER->value && $item->user_id != Auth::id()) {
             abort(403);
         }
         if ($item) {
